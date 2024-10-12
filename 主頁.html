@@ -202,6 +202,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
         }
 
         .post-card:hover {
@@ -368,7 +369,7 @@
             <!-- 留言將顯示在這裡 -->
         </div>
         <button class="screenshot-btn" onclick="captureAllScreenshots()">截圖</button>
-    </div>
+            </div>
 
     <!-- 提示框 -->
     <div id="notification" class="notification"></div>
@@ -453,6 +454,7 @@
                             postElement.innerHTML = `
                                 <h3>匿名留言</h3>
                                 <p>${postData.content}</p>
+                                ${postData.mediaUrls ? postData.mediaUrls.filter(url => url.type === 'image').map(url => `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`).join('') : ''}
                                 <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
                                 <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
                             `;
@@ -487,6 +489,7 @@
                         postElement.innerHTML = `
                             <h3>匿名留言</h3>
                             <p>${postData.content}</p>
+                            ${postData.mediaUrls ? postData.mediaUrls.filter(url => url.type === 'image').map(url => `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`).join('') : ''}
                         `;
                         postsContainer.appendChild(postElement);
                     });
@@ -557,6 +560,7 @@
                         postElement.innerHTML = `
                             <h3>匿名留言</h3>
                             <p>${postData.content}</p>
+                            ${postData.mediaUrls ? postData.mediaUrls.filter(url => url.type === 'image').map(url => `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`).join('') : ''}
                             <input type="checkbox" class="screenshot-checkbox"> 選擇截圖
                         `;
                         screenshotPostsContainer.appendChild(postElement);
@@ -643,6 +647,14 @@
                 link.download = 'screenshot_selected.png';
                 link.click();
             }
+        }
+
+        // 下載圖片功能
+        function downloadImage(imageUrl) {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = 'downloaded_image.png';
+            link.click();
         }
 
         // 登出功能
