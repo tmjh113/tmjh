@@ -270,6 +270,45 @@
             transform: scale(1.05);
         }
 
+        /* 模擬框樣式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
         /* 響應式設計 */
         @media screen and (max-width: 768px) {
             .sidebar {
@@ -328,7 +367,7 @@
         <div class="feature-cards" id="postsContainer">
             <!-- 留言將顯示在這裡 -->
         </div>
-        <button class="screenshot-btn" onclick="captureScreenshot()">截圖</button>
+        <button class="screenshot-btn" onclick="captureAllScreenshots()">截圖</button>
     </div>
 
     <!-- 提示框 -->
@@ -336,6 +375,18 @@
 
     <!-- 隱藏的文件上傳輸入 -->
     <input type="file" id="avatarUpload" style="display: none;" accept="image/*">
+
+    <!-- 截圖模擬框 -->
+    <div id="screenshotModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeScreenshotModal()">&times;</span>
+            <h2>選擇要截圖的留言</h2>
+            <div id="screenshotPostsContainer">
+                <!-- 留言將顯示在這裡 -->
+            </div>
+            <button class="screenshot-btn" onclick="captureSelectedScreenshots()">截圖</button>
+        </div>
+    </div>
 
     <script>
         // Firebase 配置
@@ -355,12 +406,17 @@
         const db = firebase.firestore();
         const storage = firebase.storage();
 
+        // 全局變量來存儲當前用戶名
+        let currentUsername = ''
+
         // 獲取當前用戶並顯示用戶名和頭像
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 const userDoc = await db.collection('users').doc(user.displayName).get();
                 const userData = userDoc.data();
                 const username = userData ? (userData.username || user.displayName) : user.displayName;
+                currentUsername = username; // 儲存到全局變量
+                console.log("當前用戶名:", currentUsername); // 新增日志
                 document.getElementById('usernameDisplay').textContent = username;
                 
                 if (userData && userData.avatarUrl) {
@@ -376,14 +432,14 @@
             }
         });
 
-        // 顯示未批准的留言
+        // 修改查詢條件以使用 currentUsername
         async function showUnapprovedPosts() {
             const postsContainer = document.getElementById('postsContainer');
             postsContainer.innerHTML = '';
 
             try {
                 const postsQuerySnapshot = await db.collection('posts')
-                    .where('approved', '==', false)
+                    .where('assignedUser', '==', currentUsername)
                     .get();
 
                 if (postsQuerySnapshot.empty) {
@@ -391,15 +447,17 @@
                 } else {
                     postsQuerySnapshot.forEach((doc) => {
                         const postData = doc.data();
-                        const postElement = document.createElement('div');
-                        postElement.className = 'post-card';
-                        postElement.innerHTML = `
-                            <h3>匿名留言</h3>
-                            <p>${postData.content}</p>
-                            <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
-                            <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
-                        `;
-                        postsContainer.appendChild(postElement);
+                        if (!postData.approved) {
+                            const postElement = document.createElement('div');
+                            postElement.className = 'post-card';
+                            postElement.innerHTML = `
+                                <h3>匿名留言</h3>
+                                <p>${postData.content}</p>
+                                <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
+                                <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
+                            `;
+                            postsContainer.appendChild(postElement);
+                        }
                     });
                 }
             } catch (error) {
@@ -415,6 +473,7 @@
 
             try {
                 const postsQuerySnapshot = await db.collection('posts')
+                    .where('assignedUser', '==', currentUsername)
                     .where('approved', '==', true)
                     .get();
 
@@ -446,7 +505,6 @@
                 });
                 showNotification("留言已批准！");
                 button.parentElement.style.display = 'none';
-                captureScreenshot();
             } catch (error) {
                 console.error("批准留言時出錯：", error);
                 showNotification("批准留言失敗，請稍後再試。");
@@ -456,9 +514,7 @@
         // 不批准留言功能
         async function rejectPost(postId, button) {
             try {
-                await db.collection('posts').doc(postId).update({
-                    approved: false
-                });
+                await db.collection('posts').doc(postId).delete();
                 showNotification("留言已不批准！");
                 button.parentElement.style.display = 'none';
             } catch (error) {
@@ -467,19 +523,125 @@
             }
         }
 
-        // 截圖功能
-        async function captureScreenshot() {
+        // 打開截圖模擬框
+        function openScreenshotModal() {
+            const modal = document.getElementById('screenshotModal');
+            modal.style.display = 'block';
+            loadPostsForScreenshot();
+        }
+
+        // 關閉截圖模擬框
+        function closeScreenshotModal() {
+            const modal = document.getElementById('screenshotModal');
+            modal.style.display = 'none';
+        }
+
+        // 加載留言到截圖模擬框
+        async function loadPostsForScreenshot() {
+            const screenshotPostsContainer = document.getElementById('screenshotPostsContainer');
+            screenshotPostsContainer.innerHTML = '';
+
+            try {
+                const postsQuerySnapshot = await db.collection('posts')
+                    .where('assignedUser', '==', currentUsername)
+                    .where('approved', '==', true)
+                    .get();
+
+                if (postsQuerySnapshot.empty) {
+                    screenshotPostsContainer.innerHTML = '<p>沒有找到相關的留言。</p>';
+                } else {
+                    postsQuerySnapshot.forEach((doc) => {
+                        const postData = doc.data();
+                        const postElement = document.createElement('div');
+                        postElement.className = 'post-card';
+                        postElement.innerHTML = `
+                            <h3>匿名留言</h3>
+                            <p>${postData.content}</p>
+                            <input type="checkbox" class="screenshot-checkbox"> 選擇截圖
+                        `;
+                        screenshotPostsContainer.appendChild(postElement);
+                    });
+                }
+            } catch (error) {
+                console.error("獲取留言時出錯：", error);
+                showNotification("載入留言失敗，請稍後再試。");
+            }
+        }
+
+        // 修改后的 captureAllScreenshots 函數
+        async function captureAllScreenshots() {
             const postsContainer = document.getElementById('postsContainer');
             const postCards = postsContainer.getElementsByClassName('post-card');
-            for (let i = 0; i < postCards.length; i++) {
-                const postCard = postCards[i];
-                html2canvas(postCard).then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const link = document.createElement('a');
-                    link.href = imgData;
-                    link.download = `screenshot_${i + 1}.png`;
-                    link.click();
-                });
+            const selectedPostCards = Array.from(postCards);
+
+            if (selectedPostCards.length > 0) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+
+                // 存儲每個 postCard 的 canvas
+                const postCardCanvases = [];
+                let totalHeight = 0;
+                let maxWidth = 0;
+
+                // 逐一生成每個 postCard 的 canvas，並計算總高度和最大寬度
+                for (const postCard of selectedPostCards) {
+                    const postCardCanvas = await html2canvas(postCard, { scale: 2, useCORS: true });
+                    postCardCanvases.push(postCardCanvas);
+                    totalHeight += postCardCanvas.height;
+                    if (postCardCanvas.width > maxWidth) {
+                        maxWidth = postCardCanvas.width;
+                    }
+                }
+
+                // 設置最終合併 canvas 的尺寸
+                canvas.width = maxWidth;
+                canvas.height = totalHeight;
+
+                let yOffset = 0;
+                // 將每個 postCard 的 canvas 繪製到合併 canvas 上
+                for (const postCardCanvas of postCardCanvases) {
+                    context.drawImage(postCardCanvas, 0, yOffset);
+                    yOffset += postCardCanvas.height;
+                }
+
+                // 將合併後的 canvas 轉換為圖像並下載
+                const imgData = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'screenshot_combined.png';
+                link.click();
+            } else {
+                showNotification("沒有可截圖的留言。");
+            }
+        }
+
+        // 截圖選擇的留言
+        async function captureSelectedScreenshots() {
+            const screenshotPostsContainer = document.getElementById('screenshotPostsContainer');
+            const checkboxes = screenshotPostsContainer.getElementsByClassName('screenshot-checkbox');
+            const selectedPostCards = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.parentElement);
+
+            if (selectedPostCards.length > 0) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                const totalHeight = selectedPostCards.reduce((sum, postCard) => sum + postCard.offsetHeight, 0);
+                const maxWidth = Math.max(...selectedPostCards.map(postCard => postCard.offsetWidth));
+
+                canvas.width = maxWidth;
+                canvas.height = totalHeight;
+
+                let yOffset = 0;
+                for (const postCard of selectedPostCards) {
+                    const postCardCanvas = await html2canvas(postCard, { scale: 2 });
+                    context.drawImage(postCardCanvas, 0, yOffset);
+                    yOffset += postCard.offsetHeight;
+                }
+
+                const imgData = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = 'screenshot_selected.png';
+                link.click();
             }
         }
 
