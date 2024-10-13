@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>個人主頁</title>
     <!-- Firebase SDK -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <!-- Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -271,6 +271,24 @@
             transform: scale(1.05);
         }
 
+        /* 刪除按鈕樣式 */
+        .delete-btn {
+            padding: 10px 20px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.3s;
+            margin-top: 20px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+        }
+
         /* 模擬框樣式 */
         .modal {
             display: none;
@@ -369,7 +387,8 @@
             <!-- 留言將顯示在這裡 -->
         </div>
         <button class="screenshot-btn" onclick="captureAllScreenshots()">截圖</button>
-            </div>
+        <button class="delete-btn" onclick="openDeleteModal()">刪除留言</button>
+    </div>
 
     <!-- 提示框 -->
     <div id="notification" class="notification"></div>
@@ -386,6 +405,18 @@
                 <!-- 留言將顯示在這裡 -->
             </div>
             <button class="screenshot-btn" onclick="captureSelectedScreenshots()">截圖</button>
+        </div>
+    </div>
+
+    <!-- 刪除留言模擬框 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h2>選擇要刪除的留言</h2>
+            <div id="deletePostsContainer">
+                <!-- 留言將顯示在這裡 -->
+            </div>
+            <button class="delete-btn" onclick="deleteSelectedPosts()">刪除</button>
         </div>
     </div>
 
@@ -454,7 +485,18 @@
                             postElement.innerHTML = `
                                 <h3>匿名留言</h3>
                                 <p>${postData.content}</p>
-                                ${postData.mediaUrls ? postData.mediaUrls.filter(url => url.type === 'image').map(url => `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`).join('') : ''}
+                                ${postData.mediaUrls ? postData.mediaUrls.map(url => {
+                                    if (url.type === 'image') {
+                                        return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    } else if (url.type === 'video') {
+                                        return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                                    <source src="${url.url}" type="video/mp4">
+                                                    您的瀏覽器不支持視頻標籤。
+                                                </video>`;
+                                    } else if (url.type === 'gif') {
+                                        return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    }
+                                }).join('') : ''}
                                 <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
                                 <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
                             `;
@@ -489,7 +531,18 @@
                         postElement.innerHTML = `
                             <h3>匿名留言</h3>
                             <p>${postData.content}</p>
-                            ${postData.mediaUrls ? postData.mediaUrls.filter(url => url.type === 'image').map(url => `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`).join('') : ''}
+                            ${postData.mediaUrls ? postData.mediaUrls.map(url => {
+                                if (url.type === 'image') {
+                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                } else if (url.type === 'video') {
+                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                                <source src="${url.url}" type="video/mp4">
+                                                您的瀏覽器不支持視頻標籤。
+                                            </video>`;
+                                } else if (url.type === 'gif') {
+                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                }
+                            }).join('') : ''}
                         `;
                         postsContainer.appendChild(postElement);
                     });
@@ -560,7 +613,18 @@
                         postElement.innerHTML = `
                             <h3>匿名留言</h3>
                             <p>${postData.content}</p>
-                            ${postData.mediaUrls ? postData.mediaUrls.filter(url => url.type === 'image').map(url => `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`).join('') : ''}
+                            ${postData.mediaUrls ? postData.mediaUrls.map(url => {
+                                if (url.type === 'image') {
+                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                } else if (url.type === 'video') {
+                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                                <source src="${url.url}" type="video/mp4">
+                                                您的瀏覽器不支持視頻標籤。
+                                            </video>`;
+                                } else if (url.type === 'gif') {
+                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                }
+                            }).join('') : ''}
                             <input type="checkbox" class="screenshot-checkbox"> 選擇截圖
                         `;
                         screenshotPostsContainer.appendChild(postElement);
@@ -569,6 +633,91 @@
             } catch (error) {
                 console.error("獲取留言時出錯：", error);
                 showNotification("載入留言失敗，請稍後再試。");
+            }
+        }
+
+        // 打開刪除模擬框
+        function openDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'block';
+            loadPostsForDelete();
+        }
+
+        // 關閉刪除模擬框
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            modal.style.display = 'none';
+        }
+
+        // 加載留言到刪除模擬框
+        async function loadPostsForDelete() {
+            const deletePostsContainer = document.getElementById('deletePostsContainer');
+            deletePostsContainer.innerHTML = '';
+
+            try {
+                const postsQuerySnapshot = await db.collection('posts')
+                    .where('assignedUser', '==', currentUsername)
+                    .get();
+
+                if (postsQuerySnapshot.empty) {
+                    deletePostsContainer.innerHTML = '<p>沒有找到相關的留言。</p>';
+                } else {
+                    postsQuerySnapshot.forEach((doc) => {
+                        const postData = doc.data();
+                        const postElement = document.createElement('div');
+                        postElement.className = 'post-card';
+                        postElement.setAttribute('data-id', doc.id); // 新增這一行
+                        postElement.innerHTML = `
+                            <h3>匿名留言</h3>
+                            <p>${postData.content}</p>
+                            ${postData.mediaUrls ? postData.mediaUrls.map(url => {
+                                if (url.type === 'image') {
+                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                } else if (url.type === 'video') {
+                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                                <source src="${url.url}" type="video/mp4">
+                                                您的瀏覽器不支持視頻標籤。
+                                            </video>`;
+                                } else if (url.type === 'gif') {
+                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                }
+                            }).join('') : ''}
+                            <input type="checkbox" class="delete-checkbox"> 選擇刪除
+                        `;
+                        deletePostsContainer.appendChild(postElement);
+                    });
+                }
+            } catch (error) {
+                console.error("獲取留言時出錯：", error);
+                showNotification("載入留言失敗，請稍後再試。");
+            }
+        }
+
+        // 刪除選擇的留言
+        async function deleteSelectedPosts() {
+            const deletePostsContainer = document.getElementById('deletePostsContainer');
+            const checkboxes = deletePostsContainer.getElementsByClassName('delete-checkbox');
+            const selectedPostCards = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.parentElement);
+
+            if (selectedPostCards.length > 0) {
+                for (const postCard of selectedPostCards) {
+                    const postId = postCard.getAttribute('data-id');
+                    if (postId) { // 新增這一行
+                        try {
+                            await db.collection('posts').doc(postId).delete();
+                            postCard.style.display = 'none';
+                        } catch (error) {
+                            console.error("刪除留言時出錯：", error);
+                            showNotification("刪除留言失敗，請稍後再試。");
+                        }
+                    } else {
+                        console.error("無法刪除留言，因為 postId 為空");
+                        showNotification("刪除留言失敗，請稍後再試。");
+                    }
+                }
+                showNotification("選擇的留言已刪除！");
+            } else {
+                showNotification("沒有選擇要刪除的留言。");
             }
         }
 
