@@ -382,6 +382,10 @@
                 <i class="fas fa-eye"></i>
                 <h3>顯示已批准的留言</h3>
             </button>
+            <button class="feature-card" onclick="showAllPosts()">
+                <i class="fas fa-list"></i>
+                <h3>顯示全部貼文</h3>
+            </button>
         </div>
         <div class="feature-cards" id="postsContainer">
             <!-- 留言將顯示在這裡 -->
@@ -519,6 +523,7 @@
                 const postsQuerySnapshot = await db.collection('posts')
                     .where('assignedUser', '==', currentUsername)
                     .where('approved', '==', true)
+                    .orderBy('createdAt', 'desc')
                     .get();
 
                 if (postsQuerySnapshot.empty) {
@@ -543,13 +548,19 @@
                                     return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
                                 }
                             }).join('') : ''}
+                            <input type="checkbox" class="delete-checkbox"> 選擇刪除
                         `;
                         postsContainer.appendChild(postElement);
                     });
                 }
             } catch (error) {
-                console.error("獲取留言時出錯：", error);
-                showNotification("載入留言失敗，請稍後再試。");
+                if (error.code === 'failed-precondition') {
+                    console.error("查詢需要索引。您可以在此處創建它：", error.message);
+                    showNotification("查詢需要索引。請檢查控制台日誌以獲取更多信息。");
+                } else {
+                    console.error("獲取留言時出錯：", error);
+                    showNotification("載入留言失敗，請稍後再試。");
+                }
             }
         }
 
@@ -695,14 +706,14 @@
 
         // 刪除選擇的留言
         async function deleteSelectedPosts() {
-            const deletePostsContainer = document.getElementById('deletePostsContainer');
-            const checkboxes = deletePostsContainer.getElementsByClassName('delete-checkbox');
+            const postsContainer = document.getElementById('postsContainer');
+            const checkboxes = postsContainer.getElementsByClassName('delete-checkbox');
             const selectedPostCards = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.parentElement);
 
             if (selectedPostCards.length > 0) {
                 for (const postCard of selectedPostCards) {
                     const postId = postCard.getAttribute('data-id');
-                    if (postId) { // 新增這一行
+                    if (postId) {
                         try {
                             await db.collection('posts').doc(postId).delete();
                             postCard.style.display = 'none';
@@ -868,6 +879,53 @@
                 }
             }
         });
+
+        // 顯示全部貼文
+        async function showAllPosts() {
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = '';
+
+            try {
+                const postsQuerySnapshot = await db.collection('posts')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (postsQuerySnapshot.empty) {
+                    postsContainer.innerHTML = '<p>沒有找到相關的貼文。</p>';
+                } else {
+                    postsQuerySnapshot.forEach((doc) => {
+                        const postData = doc.data();
+                        const createdAt = postData.createdAt ? postData.createdAt.toDate().toLocaleString() : '未知時間';
+                        const postElement = document.createElement('div');
+                        postElement.className = 'post-card';
+                        postElement.setAttribute('data-id', doc.id); // 用於刪除
+                        postElement.innerHTML = `
+                            <p>${postData.content}</p>
+                            <p><strong>時間:</strong> ${createdAt}</p>
+                            <p><strong>負責人:</strong> ${postData.assignedUser || '未知'}</p>
+                            <p><strong>IP 位置:</strong> ${postData.ipAddress || '未知'}</p>
+                            ${postData.mediaUrls ? postData.mediaUrls.map(url => {
+                                if (url.type === 'image') {
+                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                } else if (url.type === 'video') {
+                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                                <source src="${url.url}" type="video/mp4">
+                                                您的瀏覽器不支持視頻標籤。
+                                            </video>`;
+                                } else if (url.type === 'gif') {
+                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                }
+                            }).join('') : ''}
+                            <input type="checkbox" class="delete-checkbox"> 選擇刪除
+                        `;
+                        postsContainer.appendChild(postElement);
+                    });
+                }
+            } catch (error) {
+                console.error("獲取貼文時出錯：", error);
+                showNotification("載入貼文失敗，請稍後再試。");
+            }
+        }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
