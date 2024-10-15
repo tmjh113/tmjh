@@ -12,6 +12,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <!-- Font Awesome 圖標庫 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4a90e2;
@@ -23,14 +25,17 @@
             --sidebar-width: 250px;
             --success-color: #28a745;
             --danger-color: #dc3545;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --border-radius: 10px;
+            --transition-duration: 0.3s;
         }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            transition: margin-right 0.3s;
+            transition: margin-right var(--transition-duration);
             line-height: 1.6;
         }
 
@@ -44,9 +49,10 @@
             right: calc(var(--sidebar-width) * -1);
             background-color: var(--secondary-color);
             overflow-x: hidden;
-            transition: 0.5s;
+            transition: var(--transition-duration);
             padding-top: 60px;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            box-shadow: -2px 0 5px var(--shadow-color);
+            border-radius: var(--border-radius);
         }
 
         .sidebar a {
@@ -55,7 +61,7 @@
             font-size: 18px;
             color: #ecf0f1;
             display: block;
-            transition: 0.3s;
+            transition: var(--transition-duration);
         }
 
         .sidebar a:hover {
@@ -71,19 +77,19 @@
         }
 
         .openbtn {
-            font-size: 20px; /* 調整選單按鈕大小 */
+            font-size: 20px;
             cursor: pointer;
             background-color: var(--primary-color);
             color: white;
-            padding: 10px 15px; /* 調整選單按鈕大小 */
+            padding: 10px 15px;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             position: fixed;
             top: 20px;
             right: 20px;
-            transition: 0.3s;
+            transition: var(--transition-duration);
             z-index: 999;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px var(--shadow-color);
         }
 
         .openbtn:hover {
@@ -93,7 +99,7 @@
 
         /* 內容區域 */
         .content {
-            transition: margin-right 0.5s;
+            transition: margin-right var(--transition-duration);
             padding: 20px;
             max-width: 100%;
             margin: 0 auto;
@@ -102,9 +108,9 @@
         /* 用戶資訊卡片 */
         .user-card {
             background-color: var(--card-bg-color);
-            border-radius: 15px;
+            border-radius: var(--border-radius);
             padding: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px var(--shadow-color);
             margin-bottom: 30px;
             text-align: center;
         }
@@ -129,8 +135,8 @@
             color: white;
             cursor: pointer;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            transition: transform var(--transition-duration) ease;
         }
 
         .user-avatar:hover {
@@ -152,16 +158,16 @@
 
         .feature-card {
             background-color: var(--card-bg-color);
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px var(--shadow-color);
             text-align: center;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform var(--transition-duration), box-shadow var(--transition-duration);
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 12px var(--shadow-color);
         }
 
         .feature-card i {
@@ -186,8 +192,8 @@
             background-color: var(--success-color);
             color: white;
             padding: 12px 24px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 4px var(--shadow-color);
             display: none;
             z-index: 1000;
             font-size: 16px;
@@ -197,17 +203,17 @@
         .post-card {
             background-color: var(--card-bg-color);
             border-left: 5px solid var(--primary-color);
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px var(--shadow-color);
             margin-bottom: 20px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            transition: transform var(--transition-duration), box-shadow var(--transition-duration);
             position: relative;
         }
 
         .post-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 10px var(--shadow-color);
         }
 
         .post-card h3 {
@@ -224,13 +230,13 @@
         }
 
         .approve-btn, .reject-btn {
-            padding: 5px 10px; /* 調整按鈕大小 */
+            padding: 5px 10px;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-size: 0.8em; /* 調整按鈕大小 */
+            font-size: 0.8em;
             margin-top: 10px;
-            transition: background-color 0.3s, transform 0.3s;
+            transition: background-color var(--transition-duration), transform var(--transition-duration);
         }
 
         .approve-btn {
@@ -259,10 +265,10 @@
             background-color: var(--primary-color);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 1em;
-            transition: background-color 0.3s, transform 0.3s;
+            transition: background-color var(--transition-duration), transform var(--transition-duration);
             margin-top: 20px;
         }
 
@@ -277,10 +283,10 @@
             background-color: var(--danger-color);
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 1em;
-            transition: background-color 0.3s, transform 0.3s;
+            transition: background-color var(--transition-duration), transform var(--transition-duration);
             margin-top: 20px;
         }
 
@@ -299,7 +305,6 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgb(0,0,0);
             background-color: rgba(0,0,0,0.4);
         }
 
@@ -310,7 +315,7 @@
             border: 1px solid #888;
             width: 80%;
             max-width: 600px;
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             position: relative;
         }
 
@@ -548,7 +553,6 @@
                                     return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
                                 }
                             }).join('') : ''}
-                            <input type="checkbox" class="delete-checkbox"> 選擇刪除
                         `;
                         postsContainer.appendChild(postElement);
                     });
