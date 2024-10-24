@@ -1,0 +1,347 @@
+:root {
+    --primary-color: #605feb;
+    --secondary-color: #4a4a4a;
+    --accent-color: #ff6b6b;
+    --text-color: #333;
+    --bg-color: #f7f7ff;
+    --card-bg-color: #ffffff;
+    --sidebar-width: 300px;
+    --success-color: #4cd964;
+    --danger-color: #ff3b30;
+    --shadow-color: rgba(96, 95, 235, 0.1);
+    --border-radius: 15px;
+    --transition-duration: 0.3s;
+}
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: margin-right var(--transition-duration);
+    line-height: 1.8;
+}
+
+/* 側邊欄 */
+.sidebar {
+    height: 100%;
+    width: var(--sidebar-width);
+    position: fixed;
+    z-index: 1000;
+    top: 0;
+    right: calc(var(--sidebar-width) * -1);
+    background-color: var(--primary-color);
+    overflow-x: hidden;
+    transition: var(--transition-duration);
+    padding-top: 60px;
+    box-shadow: -5px 0 20px var(--shadow-color);
+    border-radius: 0 0 0 var(--border-radius);
+}
+
+.sidebar a {
+    padding: 20px 25px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #ffffff;
+    display: block;
+    transition: var(--transition-duration);
+}
+
+.sidebar a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(10px);
+}
+
+.sidebar .closebtn {
+    position: absolute;
+    top: 10px;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+.openbtn {
+    font-size: 22px;
+    cursor: pointer;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px 25px;
+    border: none;
+    border-radius: var(--border-radius);
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    transition: var(--transition-duration);
+    z-index: 999;
+    box-shadow: 0 4px 15px var(--shadow-color);
+}
+
+.openbtn:hover {
+    background-color: #4a49c7;
+    transform: scale(1.05);
+}
+
+/* 內容區域 */
+.content {
+    transition: margin-right var(--transition-duration);
+    padding: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 用戶資訊卡片 */
+.user-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    padding: 50px;
+    box-shadow: 0 15px 30px var(--shadow-color);
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.user-card h2 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-size: 2.4em;
+    margin-bottom: 30px;
+}
+
+.user-avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    margin: 0 auto 30px;
+    background-color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4em;
+    color: white;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 10px 25px var(--shadow-color);
+    transition: transform var(--transition-duration) ease;
+}
+
+.user-avatar:hover {
+    transform: scale(1.1);
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 功能卡片 */
+.feature-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background-color: var(--card-bg-color);
+    border-radius: var(--border-radius);
+    padding: 40px;
+    box-shadow: 0 10px 25px var(--shadow-color);
+    text-align: center;
+    transition: transform var(--transition-duration), box-shadow var(--transition-duration);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.feature-card i {
+    font-size: 3.5em;
+    color: var(--primary-color);
+    margin-bottom: 25px;
+}
+
+.feature-card h3 {
+    color: var(--secondary-color);
+    margin-top: 0;
+    font-size: 1.7em;
+    margin-bottom: 20px;
+}
+
+/* 提示框樣式 */
+.notification {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 18px 35px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 20px var(--shadow-color);
+    display: none;
+    z-index: 1000;
+    font-size: 18px;
+}
+
+/* 留言卡片樣式 */
+.post-card {
+    background-color: var(--card-bg-color);
+    border-left: 6px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: 0 15px 30px var(--shadow-color);
+    margin-bottom: 30px;
+    transition: transform var(--transition-duration), box-shadow var(--transition-duration);
+    position: relative;
+}
+
+.post-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.post-card h3 {
+    color: var(--primary-color);
+    margin-top: 0;
+    font-size: 1.8em;
+    margin-bottom: 20px;
+}
+
+.post-card p {
+    color: var(--text-color);
+    font-size: 1.2em;
+    margin-bottom: 15px;
+}
+
+.approve-btn, .reject-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 20px;
+    transition: background-color var(--transition-duration), transform var(--transition-duration);
+}
+
+.approve-btn {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.approve-btn:hover {
+    background-color: #3ab54a;
+    transform: scale(1.05);
+}
+
+.reject-btn {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.reject-btn:hover {
+    background-color: #e62e2e;
+    transform: scale(1.05);
+}
+
+/* 刪除按鈕樣式 */
+.delete-btn {
+    padding: 15px 30px;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1.2em;
+    transition: background-color var(--transition-duration), transform var(--transition-duration);
+    margin-top: 30px;
+}
+
+.delete-btn:hover {
+    background-color: #e62e2e;
+    transform: scale(1.05);
+}
+
+/* 模擬框樣式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 40px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 800px;
+    border-radius: var(--border-radius);
+    position: relative;
+    box-shadow: 0 20px 40px var(--shadow-color);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 36px;
+    font-weight: bold;
+    transition: color var(--transition-duration);
+}
+
+.close:hover,
+.close:focus {
+    color: var(--primary-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* 響應式設計 */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        right: -100%;
+    }
+    .content {
+        padding: 30px;
+    }
+    .user-card h2 {
+        font-size: 2.2em;
+    }
+    .user-avatar {
+        width: 140px;
+        height: 140px;
+        font-size: 3.5em;
+    }
+    .feature-cards {
+        grid-template-columns: 1fr;
+    }
+    .post-card {
+        padding: 25px;
+    }
+}
+
+.download-btn {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 6px 2px;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.download-btn:hover {
+    background-color: #4a49c7;
+    transform: scale(1.05);
+}

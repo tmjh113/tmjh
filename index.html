@@ -278,6 +278,29 @@
             });
         }
 
+        // Save login state to local storage
+        function saveLoginState(username) {
+            localStorage.setItem('loggedInUser', username);
+        }
+
+        // Get login state from local storage
+        function getLoginState() {
+            return localStorage.getItem('loggedInUser');
+        }
+
+        // Clear login state from local storage
+        function clearLoginState() {
+            localStorage.removeItem('loggedInUser');
+        }
+
+        // Check if user is already logged in
+        window.addEventListener('load', () => {
+            const loggedInUser = getLoginState();
+            if (loggedInUser) {
+                window.location.href = "主頁.html";
+            }
+        });
+
         // Sign up function
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -342,6 +365,7 @@
                 signinError.textContent = "";
                 signinSpinner.style.display = 'none';
                 signinCheckmark.style.display = 'inline-block';
+                saveLoginState(username);
                 setTimeout(() => {
                     window.location.href = "主頁.html";
                 }, 1000);

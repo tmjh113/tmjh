@@ -1,0 +1,12 @@
+[
+    {
+      "origin": [
+        "http://127.0.0.1:5000",
+        "https://tmjh113.github.io/",
+        "https://tmjh113.github.io/tmjh"
+      ],
+      "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+      "maxAgeSeconds": 3600,
+      "responseHeader": ["Content-Type", "Authorization"]
+    }
+  ]
