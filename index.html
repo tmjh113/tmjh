@@ -278,26 +278,33 @@
             });
         }
 
-        // Save login state to local storage
-        function saveLoginState(username) {
-            localStorage.setItem('loggedInUser', username);
-        }
-
-        // Get login state from local storage
-        function getLoginState() {
-            return localStorage.getItem('loggedInUser');
-        }
-
-        // Clear login state from local storage
-        function clearLoginState() {
-            localStorage.removeItem('loggedInUser');
+        // Get user's IP address
+        async function getUserIP() {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
         }
 
         // Check if user is already logged in
-        window.addEventListener('load', () => {
-            const loggedInUser = getLoginState();
-            if (loggedInUser) {
-                window.location.href = "主頁.html";
+        window.addEventListener('load', async () => {
+            const userIP = await getUserIP();
+            const ipDoc = await firebase.firestore().collection('ips').doc(userIP).get();
+
+            if (ipDoc.exists) {
+                const quickLogin = confirm("檢測到此IP地址之前登錄過，是否快速登錄？");
+                if (quickLogin) {
+                    const username = ipDoc.data().username;
+                    const userDoc = await firebase.firestore().collection('users').doc(username).get();
+                    const email = userDoc.data().email;
+                    const password = prompt("請輸入密碼以快速登錄：");
+
+                    try {
+                        await firebase.auth().signInWithEmailAndPassword(email, password);
+                        window.location.href = "主頁.html";
+                    } catch (error) {
+                        alert("快速登錄失敗：" + error.message);
+                    }
+                }
             }
         });
 
@@ -365,7 +372,13 @@
                 signinError.textContent = "";
                 signinSpinner.style.display = 'none';
                 signinCheckmark.style.display = 'inline-block';
-                saveLoginState(username);
+
+                // Save IP address to Firestore
+                const userIP = await getUserIP();
+                await firebase.firestore().collection('ips').doc(userIP).set({
+                    username: username
+                });
+
                 setTimeout(() => {
                     window.location.href = "主頁.html";
                 }, 1000);

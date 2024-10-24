@@ -255,12 +255,11 @@
         document.getElementById('logoutBtn').addEventListener('click', () => {
             auth.signOut().then(() => {
                 showNotification("已成功登出！");
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 2000);
             }).catch((error) => {
                 console.error("登出錯誤：", error);
                 showNotification("登出失敗，請稍後再試。");
+            }).finally(() => {
+                window.location.href = 'index.html';
             });
         });
 
