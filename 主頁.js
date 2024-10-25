@@ -411,60 +411,52 @@
             const maxWidth = 700;
             const lineHeight = 40;
             let x = canvas.width / 2;
-            let y = canvas.height / 2 - 50; // 將整體文字區域往上移動50像素
+            let y = canvas.height / 2 - 50;
             
-            const words = content.split('');
+            // 改進的文字換行處理
             let lines = [];
-            let line = '';
+            let words = content.split('');
+            let currentLine = '';
             
-            for (let n = 0; n < words.length; n++) {
-                const testLine = line + words[n];
-                const metrics = ctx.measureText(testLine);
-                const testWidth = metrics.width;
-                if (testWidth > maxWidth && n > 0) {
-                    lines.push(line);
-                    line = words[n];
-                } else {
-                    line = testLine;
-                }
-            }
-            lines.push(line);
-            
-            // 根據字數和行數動態調整字體大小
+            // 根據字數動態調整字體大小
             let fontSize = 28;
             if (content.length < 20) {
                 fontSize = 48;
             } else if (content.length < 50) {
                 fontSize = 36;
             }
-            
-            // 計算總高度並確保不會超出底部logo
-            const totalHeight = lines.length * lineHeight;
-            let startY = y - totalHeight / 2;
-            
-            // 檢測上下邊界
-            const topMargin = 100; // 上邊界
-            const bottomMargin = 150; // 下邊界，為了避開logo
-            
-            if (startY < topMargin) {
-                startY = topMargin;
-            }
-            
-            // 檢查是否會碰到底部logo
-            if (startY + totalHeight > canvas.height - bottomMargin) {
-                // 如果會碰到底部，需要調整字體大小
-                fontSize = Math.max(16, fontSize * ((canvas.height - bottomMargin - startY) / totalHeight));
-            }
-            
-            // 使用最終調整後的字體大小繪製文字
             ctx.font = `bold ${fontSize}px Arial, "Noto Sans TC", sans-serif`;
-            const finalLineHeight = fontSize + 12;
-            lines.forEach((line, index) => {
-                const currentY = startY + index * finalLineHeight;
-                // 確保每一行都不會碰到底部logo
-                if (currentY < canvas.height - bottomMargin) {
-                    ctx.fillText(line, x, currentY);
+            
+            // 逐字檢查並換行
+            for (let i = 0; i < words.length; i++) {
+                let testLine = currentLine + words[i];
+                let metrics = ctx.measureText(testLine);
+                let testWidth = metrics.width;
+                
+                if (testWidth > maxWidth && i > 0) {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                } else {
+                    currentLine = testLine;
                 }
+            }
+            lines.push(currentLine); // 添加最後一行
+            
+            // 計算總高度並調整起始位置
+            const totalHeight = lines.length * lineHeight;
+            const topMargin = 100;
+            const bottomMargin = 150;
+            let startY = Math.max(topMargin, (canvas.height - totalHeight) / 2);
+            
+            // 確保文字不會超出底部
+            if (startY + totalHeight > canvas.height - bottomMargin) {
+                startY = canvas.height - bottomMargin - totalHeight;
+            }
+            
+            // 繪製文字
+            lines.forEach((line, index) => {
+                const currentY = startY + index * lineHeight;
+                ctx.fillText(line, x, currentY);
             });
             
             // 將 canvas 轉換為圖片並下載
