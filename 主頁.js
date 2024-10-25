@@ -399,7 +399,7 @@
             ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
             
             // 設置文字樣式
-            ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.font = 'bold 28px Arial, "Noto Sans TC", sans-serif';
             ctx.fillStyle = '#605feb';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -409,9 +409,9 @@
             
             // 文字換行處理
             const maxWidth = 700;
-            const lineHeight = 36;
+            const lineHeight = 40;
             let x = canvas.width / 2;
-            let y = canvas.height / 2;
+            let y = canvas.height / 2 - 50; // 將整體文字區域往上移動50像素
             
             const words = content.split('');
             let lines = [];
@@ -430,20 +430,41 @@
             }
             lines.push(line);
             
-            // 計算總高度
+            // 根據字數和行數動態調整字體大小
+            let fontSize = 28;
+            if (content.length < 20) {
+                fontSize = 48;
+            } else if (content.length < 50) {
+                fontSize = 36;
+            }
+            
+            // 計算總高度並確保不會超出底部logo
             const totalHeight = lines.length * lineHeight;
             let startY = y - totalHeight / 2;
             
-            // 檢測是否重疊到模板內容
-            const templateContentHeight = 100;
-            if (startY < templateContentHeight) {
-                ctx.font = 'bold 20px Arial, sans-serif';
-                startY = Math.max(templateContentHeight, y - (lines.length * 30) / 2);
+            // 檢測上下邊界
+            const topMargin = 100; // 上邊界
+            const bottomMargin = 150; // 下邊界，為了避開logo
+            
+            if (startY < topMargin) {
+                startY = topMargin;
             }
             
-            // 繪製文字
+            // 檢查是否會碰到底部logo
+            if (startY + totalHeight > canvas.height - bottomMargin) {
+                // 如果會碰到底部，需要調整字體大小
+                fontSize = Math.max(16, fontSize * ((canvas.height - bottomMargin - startY) / totalHeight));
+            }
+            
+            // 使用最終調整後的字體大小繪製文字
+            ctx.font = `bold ${fontSize}px Arial, "Noto Sans TC", sans-serif`;
+            const finalLineHeight = fontSize + 12;
             lines.forEach((line, index) => {
-                ctx.fillText(line, x, startY + index * lineHeight);
+                const currentY = startY + index * finalLineHeight;
+                // 確保每一行都不會碰到底部logo
+                if (currentY < canvas.height - bottomMargin) {
+                    ctx.fillText(line, x, currentY);
+                }
             });
             
             // 將 canvas 轉換為圖片並下載
