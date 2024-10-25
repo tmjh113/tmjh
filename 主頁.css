@@ -510,3 +510,77 @@ body {
 .download-btn i {
     font-size: 1.2em;
 }
+
+/* 新增發布狀態樣式 */
+.post-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 15px;
+    transition: all var(--transition-duration);
+}
+
+.post-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* 未發布狀態 */
+.post-status:not(.published) {
+    background-color: rgba(255, 59, 48, 0.1);
+    color: var(--danger-color);
+}
+
+.post-status:not(.published)::before {
+    background-color: var(--danger-color);
+    box-shadow: 0 0 8px rgba(255, 59, 48, 0.5);
+    animation: pulse-red 2s infinite;
+}
+
+/* 已發布狀態 */
+.post-status.published {
+    background-color: rgba(76, 217, 100, 0.1);
+    color: var(--success-color);
+}
+
+.post-status.published::before {
+    background-color: var(--success-color);
+    box-shadow: 0 0 8px rgba(76, 217, 100, 0.5);
+}
+
+/* 狀態指示燈動畫 */
+@keyframes pulse-red {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 修改貼文卡片標題區域 */
+.post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(96, 95, 235, 0.1);
+}
+
+.post-header h3 {
+    margin: 0;
+}

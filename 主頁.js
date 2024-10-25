@@ -1,7 +1,7 @@
         // Firebase 配置
         const firebaseConfig = {
             apiKey: "AIzaSyDAw3LKSDHHwasOhN0l63lO4I-AO1xeGGU",
-            authDomain: "tmjh113.firebaseapp.com",
+            authDomain: "tmjh113.firebaseapp.com", 
             projectId: "tmjh113",
             storageBucket: "tmjh113.appspot.com",
             messagingSenderId: "936878916477",
@@ -28,11 +28,15 @@
                 console.log("當前用戶名:", currentUsername); // 新增日志
                 document.getElementById('usernameDisplay').textContent = username;
                 
+                const userAvatarElement = document.getElementById('userAvatar');
                 if (userData && userData.avatarUrl) {
-                    document.getElementById('userAvatar').innerHTML = `<img src="${userData.avatarUrl}" alt="用戶頭像">`;
+                    userAvatarElement.innerHTML = `<img src="${userData.avatarUrl}" alt="用戶頭像">`;
                 } else {
-                    document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+                    userAvatarElement.textContent = username.charAt(0).toUpperCase();
                 }
+
+                // 添加點擊事件以更換頭像
+                userAvatarElement.addEventListener('click', uploadAvatar);
 
                 // 顯示未批准的留言
                 showUnapprovedPosts();
@@ -52,32 +56,39 @@
                     .get();
 
                 if (postsQuerySnapshot.empty) {
-                    postsContainer.innerHTML = '<p>沒有找到相關的留言。</p>';
+                    postsContainer.innerHTML = '<p class="no-posts">沒有找到相關的留言。</p>';
                 } else {
                     postsQuerySnapshot.forEach((doc) => {
                         const postData = doc.data();
                         if (!postData.approved) {
                             const postElement = document.createElement('div');
                             postElement.className = 'post-card';
-                            postElement.setAttribute('data-id', doc.id); // 用於刪除和下載
+                            postElement.setAttribute('data-id', doc.id);
                             postElement.innerHTML = `
-                                <h3>匿名留言</h3>
-                                <p>${postData.content}</p>
+                                <div class="post-header">
+                                    <h3>匿名留言</h3>
+                                    <span class="post-status ${postData.published ? 'published' : ''}">
+                                        ${postData.published ? '已發布' : '待發布'}
+                                    </span>
+                                </div>
+                                <div class="post-content">${postData.content}</div>
                                 ${postData.mediaUrls ? postData.mediaUrls.map(url => {
                                     if (url.type === 'image') {
-                                        return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                        return `<img src="${url.url}" alt="留言圖片" class="post-media">`;
                                     } else if (url.type === 'video') {
-                                        return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                        return `<video controls class="post-media">
                                                     <source src="${url.url}" type="video/mp4">
                                                     您的瀏覽器不支持視頻標籤。
                                                 </video>`;
                                     } else if (url.type === 'gif') {
-                                        return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                        return `<img src="${url.url}" alt="留言GIF" class="post-media">`;
                                     }
                                 }).join('') : ''}
-                                <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
-                                <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
-                                <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
+                                <div class="post-actions">
+                                    <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
+                                    <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
+                                    <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
+                                </div>
                             `;
                             postsContainer.appendChild(postElement);
                         }
@@ -102,29 +113,36 @@
                     .get();
 
                 if (postsQuerySnapshot.empty) {
-                    postsContainer.innerHTML = '<p>沒有找到相關的留言。</p>';
+                    postsContainer.innerHTML = '<p class="no-posts">沒有找到相關的留言。</p>';
                 } else {
                     postsQuerySnapshot.forEach((doc) => {
                         const postData = doc.data();
                         const postElement = document.createElement('div');
                         postElement.className = 'post-card';
-                        postElement.setAttribute('data-id', doc.id); // 用於刪除和下載
+                        postElement.setAttribute('data-id', doc.id);
                         postElement.innerHTML = `
-                            <h3>匿名留言</h3>
-                            <p>${postData.content}</p>
+                            <div class="post-header">
+                                <h3>匿名留言</h3>
+                                <span class="post-status ${postData.published ? 'published' : ''}">
+                                    ${postData.published ? '已發布' : '待發布'}
+                                </span>
+                            </div>
+                            <div class="post-content">${postData.content}</div>
                             ${postData.mediaUrls ? postData.mediaUrls.map(url => {
                                 if (url.type === 'image') {
-                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    return `<img src="${url.url}" alt="留言圖片" class="post-media">`;
                                 } else if (url.type === 'video') {
-                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                    return `<video controls class="post-media">
                                                 <source src="${url.url}" type="video/mp4">
                                                 您的瀏覽器不支持視頻標籤。
                                             </video>`;
                                 } else if (url.type === 'gif') {
-                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    return `<img src="${url.url}" alt="留言GIF" class="post-media">`;
                                 }
                             }).join('') : ''}
-                            <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
+                            <div class="post-actions">
+                                <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
+                            </div>
                         `;
                         postsContainer.appendChild(postElement);
                     });
@@ -147,7 +165,7 @@
                     approved: true
                 });
                 showNotification("留言已批准！");
-                button.parentElement.style.display = 'none';
+                button.parentElement.parentElement.style.display = 'none';
             } catch (error) {
                 console.error("批准留言時出錯：", error);
                 showNotification("批准留言失敗，請稍後再試。");
@@ -159,7 +177,7 @@
             try {
                 await db.collection('posts').doc(postId).delete();
                 showNotification("留言已不批准！");
-                button.parentElement.style.display = 'none';
+                button.parentElement.parentElement.style.display = 'none';
             } catch (error) {
                 console.error("不批准留言時出錯：", error);
                 showNotification("不批准留言失敗，請稍後再試。");
@@ -190,29 +208,36 @@
                     .get();
 
                 if (postsQuerySnapshot.empty) {
-                    deletePostsContainer.innerHTML = '<p>沒有找到相關的留言。</p>';
+                    deletePostsContainer.innerHTML = '<p class="no-posts">沒有找到相關的留言。</p>';
                 } else {
                     postsQuerySnapshot.forEach((doc) => {
                         const postData = doc.data();
                         const postElement = document.createElement('div');
                         postElement.className = 'post-card';
-                        postElement.setAttribute('data-id', doc.id); // 新增這一行
+                        postElement.setAttribute('data-id', doc.id);
                         postElement.innerHTML = `
-                            <h3>匿名留言</h3>
-                            <p>${postData.content}</p>
+                            <div class="post-header">
+                                <h3>匿名留言</h3>
+                                <span class="post-status ${postData.published ? 'published' : ''}">
+                                    ${postData.published ? '已發布' : '未發布'}
+                                </span>
+                            </div>
+                            <div class="post-content">${postData.content}</div>
                             ${postData.mediaUrls ? postData.mediaUrls.map(url => {
                                 if (url.type === 'image') {
-                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    return `<img src="${url.url}" alt="留言圖片" class="post-media">`;
                                 } else if (url.type === 'video') {
-                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                    return `<video controls class="post-media">
                                                 <source src="${url.url}" type="video/mp4">
                                                 您的瀏覽器不支持視頻標籤。
                                             </video>`;
                                 } else if (url.type === 'gif') {
-                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    return `<img src="${url.url}" alt="留言GIF" class="post-media">`;
                                 }
                             }).join('') : ''}
-                            <input type="checkbox" class="delete-checkbox"> 選擇刪除
+                            <div class="post-actions">
+                                <input type="checkbox" class="delete-checkbox"> 選擇刪除
+                            </div>
                         `;
                         deletePostsContainer.appendChild(postElement);
                     });
@@ -227,7 +252,7 @@
         async function deleteSelectedPosts() {
             const postsContainer = document.getElementById('postsContainer');
             const checkboxes = postsContainer.getElementsByClassName('delete-checkbox');
-            const selectedPostCards = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.parentElement);
+            const selectedPostCards = Array.from(checkboxes).filter(checkbox => checkbox.checked).map(checkbox => checkbox.closest('.post-card'));
 
             if (selectedPostCards.length > 0) {
                 for (const postCard of selectedPostCards) {
@@ -296,7 +321,7 @@
             if (file) {
                 const user = auth.currentUser;
                 if (user) {
-                    const storageRef  = storage.ref(`avatars/${user.displayName}`);
+                    const storageRef = storage.ref(`avatars/${user.displayName}`);
                     try {
                         await storageRef.put(file);
                         const downloadURL = await storageRef.getDownloadURL();
@@ -324,33 +349,43 @@
                     .get();
 
                 if (postsQuerySnapshot.empty) {
-                    postsContainer.innerHTML = '<p>沒有找到相關的貼文。</p>';
+                    postsContainer.innerHTML = '<p class="no-posts">沒有找到相關的貼文。</p>';
                 } else {
                     postsQuerySnapshot.forEach((doc) => {
                         const postData = doc.data();
                         const createdAt = postData.createdAt ? postData.createdAt.toDate().toLocaleString() : '未知時間';
                         const postElement = document.createElement('div');
                         postElement.className = 'post-card';
-                        postElement.setAttribute('data-id', doc.id); // 用於刪除和下載
+                        postElement.setAttribute('data-id', doc.id);
                         postElement.innerHTML = `
-                            <p>${postData.content}</p>
-                            <p><strong>時間:</strong> ${createdAt}</p>
-                            <p><strong>負責人:</strong> ${postData.assignedUser || '未知'}</p>
-                            <p><strong>IP 位置:</strong> ${postData.ipAddress || '未知'}</p>
+                            <div class="post-header">
+                                <h3>匿名留言</h3>
+                                <span class="post-status ${postData.published ? 'published' : ''}">
+                                    ${postData.published ? '已發布' : '未發布'}
+                                </span>
+                            </div>
+                            <div class="post-content">${postData.content}</div>
+                            <div class="post-info">
+                                <p><strong>時間:</strong> ${createdAt}</p>
+                                <p><strong>負責人:</strong> ${postData.assignedUser || '未知'}</p>
+                                <p><strong>IP 位置:</strong> ${postData.ipAddress || '未知'}</p>
+                            </div>
                             ${postData.mediaUrls ? postData.mediaUrls.map(url => {
                                 if (url.type === 'image') {
-                                    return `<img src="${url.url}" alt="留言圖片" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    return `<img src="${url.url}" alt="留言圖片" class="post-media">`;
                                 } else if (url.type === 'video') {
-                                    return `<video controls style="max-width: 100%; display: block; margin: 10px 0;">
+                                    return `<video controls class="post-media">
                                                 <source src="${url.url}" type="video/mp4">
                                                 您的瀏覽器不支持視頻標籤。
                                             </video>`;
                                 } else if (url.type === 'gif') {
-                                    return `<img src="${url.url}" alt="留言GIF" style="max-width: 100%; display: block; margin: 10px 0;">`;
+                                    return `<img src="${url.url}" alt="留言GIF" class="post-media">`;
                                 }
                             }).join('') : ''}
-                            <input type="checkbox" class="delete-checkbox"> 選擇刪除
-                            <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
+                            <div class="post-actions">
+                                <input type="checkbox" class="delete-checkbox"> 選擇刪除
+                                <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
+                            </div>
                         `;
                         postsContainer.appendChild(postElement);
                     });
@@ -363,7 +398,26 @@
 
         // 下載留言為圖片功能
         async function downloadPostAsImage(button) {
-            const postCard = button.parentElement;
+            const postCard = button.closest('.post-card');
+            const postId = postCard.getAttribute('data-id');
+            
+            try {
+                // 更新資料庫中的發布狀態
+                await db.collection('posts').doc(postId).update({
+                    published: true,
+                    publishedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // 更新UI顯示
+                const statusSpan = postCard.querySelector('.post-status');
+                if (statusSpan) {
+                    statusSpan.textContent = '已發布';
+                    statusSpan.classList.add('published');
+                }
+            } catch (error) {
+                console.error("更新發布狀態時出錯：", error);
+                showNotification("更新發布狀態失敗，但將繼續下載圖片。");
+            }
             
             // 檢查是否有附加圖片或照片
             const mediaElements = postCard.querySelectorAll('img, video');
@@ -376,7 +430,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `附加媒體_${postCard.getAttribute('data-id')}_${index + 1}${getFileExtension(mediaUrl)}`;
+                    link.download = `附加媒體_${postId}_${index + 1}${getFileExtension(mediaUrl)}`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -405,7 +459,7 @@
             ctx.textBaseline = 'middle';
             
             // 獲取匿名內容
-            const content = postCard.querySelector('p').textContent;
+            const content = postCard.querySelector('.post-content').textContent;
             
             // 文字換行處理
             const maxWidth = 700;
@@ -440,7 +494,7 @@
                     currentLine = testLine;
                 }
             }
-            lines.push(currentLine); // 添加最後一行
+            lines.push(currentLine);
             
             // 計算總高度並調整起始位置
             const totalHeight = lines.length * lineHeight;
@@ -464,11 +518,13 @@
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `匿名留言_${postCard.getAttribute('data-id')}.png`;
+                link.download = `匿名留言_${postId}.png`;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
+                
+                showNotification("圖片已下載，留言已標記為已發布！");
             }, 'image/png');
         }
 
@@ -476,3 +532,4 @@
         function getFileExtension(url) {
             return url.split('.').pop().split(/\#|\?/)[0];
         }
+
