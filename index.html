@@ -19,55 +19,110 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #ffffff;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 50%, #a1c4fd 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            animation: pulse 15s infinite;
+            filter: blur(5px);
+        }
+
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.2; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
         }
 
         .container {
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                        0 10px 20px -5px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             overflow: hidden;
-            width: 400px;
+            width: 450px;
             max-width: 100%;
-            transition: all 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+            position: relative;
+        }
+
+        .container:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.3);
         }
 
         .form-container {
-            padding: 40px;
+            padding: 50px;
         }
 
         h2 {
-            color: #333;
-            font-size: 28px;
+            color: #2b3442;
+            font-size: 32px;
             font-weight: 700;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             text-align: center;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            position: relative;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        form {
-            display: flex;
-            flex-direction: column;
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        h2:hover::after {
+            width: 100px;
         }
 
         .input-group {
             position: relative;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         input {
             width: 100%;
-            padding: 15px;
+            padding: 18px 15px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 15px;
             font-size: 16px;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         input:focus {
             border-color: #2575fc;
-            outline: none;
+            box-shadow: 0 0 0 4px rgba(37, 117, 252, 0.1);
+            transform: translateY(-2px);
         }
 
         label {
@@ -75,90 +130,157 @@
             top: 50%;
             left: 15px;
             transform: translateY(-50%);
-            color: #999;
+            color: #666;
             font-size: 16px;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 5px;
+            background: transparent;
         }
 
         input:focus + label,
         input:not(:placeholder-shown) + label {
             top: 0;
             left: 10px;
-            font-size: 12px;
+            font-size: 13px;
             padding: 0 5px;
-            background-color: white;
+            background: white;
             color: #2575fc;
+            font-weight: 500;
+            transform: translateY(-50%) scale(0.9);
         }
 
         button {
             background: linear-gradient(45deg, #6a11cb, #2575fc);
             color: white;
             border: none;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 18px;
+            border-radius: 15px;
             cursor: pointer;
             font-size: 18px;
-            font-weight: 500;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-            margin-top: 10px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 15px;
             position: relative;
+            overflow: hidden;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(255, 255, 255, 0.4),
+                transparent
+            );
+            transition: 0.6s;
+        }
+
+        button:hover::before {
+            left: 100%;
         }
 
         button:hover {
             background: linear-gradient(45deg, #5900b3, #1e5fc7);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
+            box-shadow: 0 7px 20px rgba(37, 117, 252, 0.4);
         }
 
         .toggle {
             text-align: center;
-            margin-top: 25px;
-            font-size: 14px;
+            margin-top: 30px;
+            font-size: 15px;
             color: #666;
         }
 
         .toggle a {
             color: #2575fc;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.3s ease;
+            position: relative;
+            padding: 2px 4px;
         }
 
-        .toggle a:hover {
-            color: #6a11cb;
+        .toggle a::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background: linear-gradient(45deg, #6a11cb, #2575fc);
+            transform: scaleX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .toggle a:hover::after {
+            transform: scaleX(1);
         }
 
         .error-message {
             color: #ff3860;
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 56, 96, 0.1);
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .error-message:not(:empty) {
+            display: block;
         }
 
         .success-message {
             color: #23d160;
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(35, 209, 96, 0.1);
+            border-radius: 8px;
+            display: none;
+            animation: slideIn 0.3s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .success-message:not(:empty) {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(-10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
         }
 
         #registerForm, #loginForm {
-            animation: fadeIn 0.5s ease;
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .spinner {
             display: none;
             width: 24px;
             height: 24px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
             position: absolute;
             right: 15px;
             top: 50%;
@@ -171,28 +293,102 @@
 
         .checkmark {
             display: none;
-            width: 24px;
-            height: 24px;
+            width: 25px;
+            height: 25px;
             border-radius: 50%;
             background-color: #23d160;
             position: relative;
             margin-left: 10px;
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
         }
 
         .checkmark::after {
             content: '';
             position: absolute;
-            left: 7px;
-            top: 3px;
-            width: 5px;
-            height: 10px;
+            left: 9px;
+            top: 5px;
+            width: 6px;
+            height: 11px;
             border: solid white;
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
         }
+
+        /* 新增動畫效果 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .container {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* 新增載入動畫 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2575fc;
+            border-radius: 50%;
+            animation: loadingSpin 1s linear infinite;
+        }
+
+        @keyframes loadingSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 快速登錄按鈕樣式 */
+        .quick-login-container {
+            margin-bottom: 15px;
+        }
+
+        .quick-login-password {
+            margin-bottom: 10px;
+        }
+
+        .quick-login-btn {
+            background: linear-gradient(45deg, #2575fc, #6a11cb);
+        }
+
+        .quick-login-btn:hover {
+            background: linear-gradient(45deg, #1e5fc7, #5900b3);
+        }
     </style>
 </head>
 <body>
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
     <div class="container">
         <div class="form-container">
             <div id="registerForm" style="display: none;">
@@ -219,6 +415,13 @@
             
             <div id="loginForm">
                 <h2>歡迎回來</h2>
+                <div id="quickLoginContainer" class="quick-login-container" style="display: none;">
+                    <div class="input-group quick-login-password">
+                        <input type="password" id="quickLoginPassword" required placeholder=" ">
+                        <label for="quickLoginPassword">快速登錄密碼</label>
+                    </div>
+                    <button class="quick-login-btn" onclick="handleQuickLogin()">快速登錄</button>
+                </div>
                 <form id="signinForm">
                     <div class="input-group">
                         <input type="text" id="signinUsername" required placeholder=" ">
@@ -270,6 +473,12 @@
         const signinSuccess = document.getElementById('signinSuccess');
         const signinSpinner = document.getElementById('signinSpinner');
         const signinCheckmark = document.getElementById('signinCheckmark');
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        const quickLoginContainer = document.getElementById('quickLoginContainer');
+        const quickLoginPassword = document.getElementById('quickLoginPassword');
+
+        let savedUsername = '';
+        let savedEmail = '';
 
         // Check if username exists in the database
         function checkUsernameExists(username) {
@@ -285,64 +494,90 @@
             return data.ip;
         }
 
+        // Show loading overlay
+        function showLoading() {
+            loadingOverlay.classList.add('active');
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            loadingOverlay.classList.remove('active');
+        }
+
+        // Handle quick login
+        async function handleQuickLogin() {
+            const password = quickLoginPassword.value;
+            if (password) {
+                showLoading();
+                try {
+                    await firebase.auth().signInWithEmailAndPassword(savedEmail, password);
+                    signinSuccess.textContent = "登入成功";
+                    signinError.textContent = "";
+                    signinCheckmark.style.display = 'inline-block';
+                    setTimeout(() => {
+                        window.location.href = "主頁.html";
+                    }, 1000);
+                } catch (error) {
+                    signinError.textContent = "快速登錄失敗：" + error.message;
+                    signinSuccess.textContent = "";
+                }
+                hideLoading();
+            }
+        }
+
         // Check if user is already logged in
         window.addEventListener('load', async () => {
-            const userIP = await getUserIP();
-            const ipDoc = await firebase.firestore().collection('ips').doc(userIP).get();
+            showLoading();
+            try {
+                const userIP = await getUserIP();
+                const ipDoc = await firebase.firestore().collection('ips').doc(userIP).get();
 
-            if (ipDoc.exists) {
-                const quickLogin = confirm("檢測到此IP地址之前登錄過，是否快速登錄？");
-                if (quickLogin) {
-                    const username = ipDoc.data().username;
-                    const userDoc = await firebase.firestore().collection('users').doc(username).get();
-                    const email = userDoc.data().email;
-                    const password = prompt("請輸入密碼以快速登錄：");
-
-                    try {
-                        await firebase.auth().signInWithEmailAndPassword(email, password);
-                        window.location.href = "主頁.html";
-                    } catch (error) {
-                        alert("快速登錄失敗：" + error.message);
-                    }
+                if (ipDoc.exists) {
+                    savedUsername = ipDoc.data().username;
+                    const userDoc = await firebase.firestore().collection('users').doc(savedUsername).get();
+                    savedEmail = userDoc.data().email;
+                    quickLoginContainer.style.display = 'block';
                 }
+            } catch (error) {
+                console.error("Error:", error);
+            } finally {
+                hideLoading();
             }
         });
 
         // Sign up function
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            showLoading();
             const username = signupForm['signupUsername'].value;
             const email = signupForm['signupEmail'].value;
             const password = signupForm['signupPassword'].value;
 
-            const usernameExists = await checkUsernameExists(username);
-            if (usernameExists) {
-                signupError.textContent = "使用者名稱已被佔用，請選擇其他名稱。";
-                signupSuccess.textContent = "";
-                return;
-            }
-
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    // Save username to Firestore
-                    return firebase.firestore().collection('users').doc(username).set({
-                        email: email
-                    }).then(() => {
-                        // Update profile with username
-                        return userCredential.user.updateProfile({
-                            displayName: username
-                        });
-                    });
-                })
-                .then(() => {
-                    signupForm.reset();
-                    signupSuccess.textContent = "註冊成功";
-                    signupError.textContent = "";
-                })
-                .catch((error) => {
-                    signupError.textContent = error.message;
+            try {
+                const usernameExists = await checkUsernameExists(username);
+                if (usernameExists) {
+                    signupError.textContent = "使用者名稱已被佔用，請選擇其他名稱。";
                     signupSuccess.textContent = "";
+                    return;
+                }
+
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                await firebase.firestore().collection('users').doc(username).set({
+                    email: email
                 });
+                await userCredential.user.updateProfile({
+                    displayName: username
+                });
+
+                signupForm.reset();
+                signupSuccess.textContent = "註冊成功";
+                signupError.textContent = "";
+            } catch (error) {
+                signupError.textContent = error.message;
+                signupSuccess.textContent = "";
+            } finally {
+                hideLoading();
+            }
         });
 
         // Sign in function
@@ -352,28 +587,23 @@
             const password = signinForm['signinPassword'].value;
 
             try {
-                // Show spinner
                 signinSpinner.style.display = 'inline-block';
+                showLoading();
 
-                // Get email associated with the username
                 const userDoc = await firebase.firestore().collection('users').doc(username).get();
                 if (!userDoc.exists) {
                     signinError.textContent = "無效的登錄憑證。";
                     signinSuccess.textContent = "";
-                    signinSpinner.style.display = 'none';
                     return;
                 }
                 const email = userDoc.data().email;
 
-                // Sign in with email and password
                 await firebase.auth().signInWithEmailAndPassword(email, password);
                 signinForm.reset();
                 signinSuccess.textContent = "登入成功";
                 signinError.textContent = "";
-                signinSpinner.style.display = 'none';
                 signinCheckmark.style.display = 'inline-block';
 
-                // Save IP address to Firestore
                 const userIP = await getUserIP();
                 await firebase.firestore().collection('ips').doc(userIP).set({
                     username: username
@@ -386,15 +616,38 @@
                 console.error("登入錯誤：", error);
                 signinError.textContent = error.message;
                 signinSuccess.textContent = "";
+            } finally {
                 signinSpinner.style.display = 'none';
+                hideLoading();
             }
         });
 
         function toggleForms() {
             const registerForm = document.getElementById('registerForm');
             const loginForm = document.getElementById('loginForm');
-            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
-            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            
+            if (registerForm.style.display === 'none') {
+                registerForm.style.opacity = '0';
+                registerForm.style.display = 'block';
+                setTimeout(() => {
+                    registerForm.style.opacity = '1';
+                }, 10);
+                loginForm.style.opacity = '0';
+                setTimeout(() => {
+                    loginForm.style.display = 'none';
+                }, 300);
+            } else {
+                loginForm.style.opacity = '0';
+                loginForm.style.display = 'block';
+                setTimeout(() => {
+                    loginForm.style.opacity = '1';
+                }, 10);
+                registerForm.style.opacity = '0';
+                setTimeout(() => {
+                    registerForm.style.display = 'none';
+                }, 300);
+            }
+            
             signupError.textContent = '';
             signinError.textContent = '';
             signupSuccess.textContent = '';
