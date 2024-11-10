@@ -18,6 +18,52 @@
         // 全局變量來存儲當前用戶名
         let currentUsername = ''
 
+        // 添加 Gemini API 配置
+        const GEMINI_API_KEY = 'AIzaSyCrqrq5guQC4HYciQI5z3DfRIz1wi83Um8';
+        const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+
+        // 添加自動審核功能
+        async function autoReviewContent(content) {
+            const prompt = `
+            請分析以下內容是否違反以下準則：
+            1. 校園霸凌準則
+            2. 公共侮辱罪
+            3. 誹謗罪
+            
+            內容：${content}
+            
+            請以JSON格式回答，包含：
+            {
+                "isViolation": true/false,
+                "reason": "違規原因說明",
+                "violationType": ["違反的類型"]
+            }
+            `;
+
+            try {
+                const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                return result;
+            } catch (error) {
+                console.error('AI審核出錯：', error);
+                return null;
+            }
+        }
+
         // 獲取當前用戶並顯示用戶名和頭像
         auth.onAuthStateChanged(async (user) => {
             if (user) {
@@ -49,6 +95,9 @@
         async function showUnapprovedPosts() {
             const postsContainer = document.getElementById('postsContainer');
             postsContainer.innerHTML = '';
+
+            // 添加批量核按鈕
+            addBatchReviewButton();
 
             try {
                 const postsQuerySnapshot = await db.collection('posts')
@@ -85,6 +134,7 @@
                                     }
                                 }).join('') : ''}
                                 <div class="post-actions">
+                                    <button class="auto-review-btn" onclick="performAutoReview('${doc.id}', this)">AI自動審核</button>
                                     <button class="approve-btn" onclick="approvePost('${doc.id}', this)">批准</button>
                                     <button class="reject-btn" onclick="rejectPost('${doc.id}', this)">不批准</button>
                                     <button class="download-btn" onclick="downloadPostAsImage(this)">下載圖片</button>
@@ -97,6 +147,39 @@
             } catch (error) {
                 console.error("獲取留言時出錯：", error);
                 showNotification("載入留言失敗，請稍後再試。");
+            }
+        }
+
+        // 添加自動審核執行函數
+        async function performAutoReview(postId, button) {
+            const postCard = button.closest('.post-card');
+            const content = postCard.querySelector('.post-content').textContent;
+            
+            button.disabled = true;
+            button.textContent = '審核中...';
+            
+            try {
+                const result = await autoReviewContent(content);
+                
+                if (result) {
+                    if (result.isViolation) {
+                        // 如果違規，自動執行不批准
+                        await rejectPost(postId, button);
+                        showNotification(`自動審核結果：不通過\n原因：${result.reason}`);
+                    } else {
+                        // 如果未違規，自動執批准
+                        await approvePost(postId, button);
+                        showNotification('自動審核結果：通過');
+                    }
+                } else {
+                    showNotification('AI審核失敗，請手動審核');
+                }
+            } catch (error) {
+                console.error('執行自動審核時出錯：', error);
+                showNotification('自動審核失敗，請手動審核');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'AI自動審核';
             }
         }
 
@@ -158,26 +241,34 @@
             }
         }
 
-        // 批准留言功能
-        async function approvePost(postId, button) {
+        // 修改批准留言功能
+        async function approvePost(postId, button = null) {
             try {
                 await db.collection('posts').doc(postId).update({
                     approved: true
                 });
                 showNotification("留言已批准！");
-                button.parentElement.parentElement.style.display = 'none';
+                
+                // 只有在提供了按鈕參數時才隱藏卡片
+                if (button) {
+                    button.closest('.post-card').style.display = 'none';
+                }
             } catch (error) {
                 console.error("批准留言時出錯：", error);
                 showNotification("批准留言失敗，請稍後再試。");
             }
         }
 
-        // 不批准留言功能
-        async function rejectPost(postId, button) {
+        // 修改不批准留言功能
+        async function rejectPost(postId, button = null) {
             try {
                 await db.collection('posts').doc(postId).delete();
                 showNotification("留言已不批准！");
-                button.parentElement.parentElement.style.display = 'none';
+                
+                // 只有在提供了按鈕參數時才隱藏卡片
+                if (button) {
+                    button.closest('.post-card').style.display = 'none';
+                }
             } catch (error) {
                 console.error("不批准留言時出錯：", error);
                 showNotification("不批准留言失敗，請稍後再試。");
@@ -531,5 +622,107 @@
         // 輔助函數：獲取文件擴展名
         function getFileExtension(url) {
             return url.split('.').pop().split(/\#|\?/)[0];
+        }
+
+        // 修改批量審核按鈕添加函數
+        function addBatchReviewButton() {
+            const container = document.getElementById('postsContainer');
+            const batchReviewDiv = document.createElement('div');
+            batchReviewDiv.className = 'batch-review-container';
+            batchReviewDiv.innerHTML = `
+                <button class="batch-review-btn" onclick="performBatchAutoReview()">
+                    一鍵智能審核全部留言
+                </button>
+                <div class="review-progress">
+                    <span>審核進度：</span>
+                    <span class="progress-count">0</span> / <span class="total-count">0</span>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar"></div>
+                    </div>
+                </div>
+            `;
+            container.insertBefore(batchReviewDiv, container.firstChild);
+        }
+
+        // 修改批量審核功能
+        async function performBatchAutoReview() {
+            const postsContainer = document.getElementById('postsContainer');
+            const postCards = postsContainer.querySelectorAll('.post-card');
+            const progressElement = document.querySelector('.review-progress');
+            const progressCount = progressElement.querySelector('.progress-count');
+            const totalCount = progressElement.querySelector('.total-count');
+            const progressBar = progressElement.querySelector('.progress-bar');
+            const batchReviewBtn = document.querySelector('.batch-review-btn');
+            
+            if (postCards.length === 0) {
+                showNotification('沒有需要審核的留言');
+                return;
+            }
+
+            // 禁用按鈕並更改文字
+            batchReviewBtn.disabled = true;
+            batchReviewBtn.innerHTML = '正在審核中...';
+            
+            // 顯示進度條
+            progressElement.classList.add('active');
+            totalCount.textContent = postCards.length;
+            
+            let successCount = 0;
+            let failCount = 0;
+            
+            try {
+                for (let i = 0; i < postCards.length; i++) {
+                    const postCard = postCards[i];
+                    const postId = postCard.getAttribute('data-id');
+                    const content = postCard.querySelector('.post-content').textContent;
+                    
+                    // 更新進度
+                    progressCount.textContent = i + 1;
+                    const progress = ((i + 1) / postCards.length) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    
+                    try {
+                        const result = await autoReviewContent(content);
+                        
+                        if (result) {
+                            if (result.isViolation) {
+                                await rejectPost(postId);
+                                failCount++;
+                                postCard.style.opacity = '0.5';
+                                postCard.style.transform = 'scale(0.95)';
+                            } else {
+                                await approvePost(postId);
+                                successCount++;
+                                postCard.style.opacity = '0.5';
+                                postCard.style.transform = 'scale(0.95)';
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`審核留言 ${postId} 時出錯:`, error);
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                showNotification(`批量審核完成！\n✅ 通過: ${successCount} 則\n❌ 不通過: ${failCount} 則`);
+            } catch (error) {
+                console.error('批量審核出錯：', error);
+                showNotification('批量審核過程中發生錯誤，請查看控制台');
+            } finally {
+                // 重置按鈕狀態
+                batchReviewBtn.disabled = false;
+                batchReviewBtn.innerHTML = '一鍵智能審核全部留言';
+                
+                // 隱藏進度顯示
+                setTimeout(() => {
+                    progressElement.classList.remove('active');
+                    progressBar.style.width = '0%';
+                }, 1000);
+                
+                // 重新載入未審核的留言
+                setTimeout(() => {
+                    showUnapprovedPosts();
+                }, 1500);
+            }
         }
 
